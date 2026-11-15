@@ -171,6 +171,74 @@
 @media(max-width:520px){.pd-related{margin-top:24px}.pd-related-head{align-items:start}.pd-related-count{font-size:10px;padding:6px 8px}.pd-related-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pd-related-visual{height:125px;min-height:125px}.pd-related-info{padding:10px;gap:6px}.pd-related-name{font-size:12px}.pd-related-category{font-size:10px}.pd-related-price{font-size:14px}.pd-related-view{font-size:11px;min-height:34px}.pd-related-featured-mark{font-size:9px;letter-spacing:.6px}}
 @media(max-width:345px){.pd-related-grid{grid-template-columns:1fr}.pd-related-visual{height:165px}}
 @media(prefers-reduced-motion:reduce){.pd-related-card{transition:none}.pd-related-card:hover{transform:none}}
+
+/* JEBHA STORE — Neon Crimson for ALL normal product cards.
+   Featured cards keep the original gold JEBHA OFFERS design. */
+.card:not(.jebha-featured),
+.pd-related-card:not(.pd-related-featured){
+  position:relative;
+  isolation:isolate;
+  border:1px solid #fa3458;
+  background:linear-gradient(155deg,#201219 0%,#141116 57%,#0e0d13 100%);
+  box-shadow:0 0 0 1px #f52e4d2c,0 0 16px #e71d4236,0 12px 32px #0009;
+  animation:jebha-standard-red-pulse 4.2s ease-in-out infinite;
+}
+.card:not(.jebha-featured)::after,
+.pd-related-card:not(.pd-related-featured)::after{
+  content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px #ff668048,inset 0 0 20px #fb214210;
+}
+.card:not(.jebha-featured):hover,
+.pd-related-card:not(.pd-related-featured):hover{
+  transform:translateY(-4px);
+  border-color:#ff7289;
+  box-shadow:0 0 0 1px #ff527c65,0 0 34px #ff174d8a,0 17px 37px #000a;
+}
+.jebha-standard-heading,
+.pd-related-standard-mark{
+  position:relative;z-index:2;display:flex;align-items:center;justify-content:center;
+  flex:none;text-align:center;
+  background:linear-gradient(100deg,#300d18,#651326 50%,#300d18);
+  color:#ffe6ec;border-bottom:1px solid #fe486c;
+  font-weight:900;text-transform:uppercase;letter-spacing:1.6px;
+  text-shadow:0 0 10px #ff3b66bb,0 0 18px #ff174a6b;
+}
+.jebha-standard-heading{font-size:11px;padding:12px 9px 11px}
+.pd-related-standard-mark{font-size:10px;padding:8px 10px;letter-spacing:1.1px}
+.card:not(.jebha-featured) .visual{
+  border-bottom-color:#933145;
+  background:radial-gradient(ellipse at 50% 100%,#c71a4552,transparent 73%),#171018;
+}
+.card:not(.jebha-featured) .visual .badge{
+  background:#3b111e;border-color:#e84764;color:#ffd5dd;
+}
+.card:not(.jebha-featured) .category,
+.pd-related-card:not(.pd-related-featured) .pd-related-category{color:#ff718d}
+.card:not(.jebha-featured) .price,
+.pd-related-card:not(.pd-related-featured) .pd-related-price{
+  color:#ff6d88;text-shadow:0 0 12px #ff315b75;
+}
+.pd-related-card:not(.pd-related-featured) .pd-related-view{
+  background:linear-gradient(105deg,#96142e,#e62348 55%,#99152f);
+  border:1px solid #fa5274;color:white;
+  box-shadow:0 0 14px #f2294d3a;
+}
+.pd-related-card:not(.pd-related-featured):hover .pd-related-view{
+  background:linear-gradient(105deg,#be1638,#ff315b 55%,#c2183a);
+}
+@keyframes jebha-standard-red-pulse{
+  0%,100%{box-shadow:0 0 0 1px #f52e4d2c,0 0 16px #e71d4236,0 12px 32px #0009}
+  50%{box-shadow:0 0 0 1px #ff476659,0 0 27px #ff1c5268,0 12px 32px #0009}
+}
+@media(max-width:450px){
+ .jebha-standard-heading{font-size:10px;padding:10px 6px;letter-spacing:1.2px}
+ .pd-related-standard-mark{font-size:9px;padding:7px 5px;letter-spacing:.65px}
+}
+@media(prefers-reduced-motion:reduce){
+ .card:not(.jebha-featured),.pd-related-card:not(.pd-related-featured){animation:none}
+}
+
 </style>
 <meta name="robots" content="index,follow"><meta property="og:title" content="JEBHA STORE | Digital Products"><meta property="og:description" content="Digital subscriptions, games and services in Morocco. Order on WhatsApp."><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="config.js?v=20261115b"></script></head><body>
 <div class="topline">⚡ <strong>JEBHA STORE</strong><span data-ar=" — عالم المنتجات والخدمات الرقمية" data-en=" — Digital Products &amp; Services"> — Digital Products &amp; Services</span></div>
@@ -263,7 +331,7 @@ function render(){
  $('catalogSubtitle').textContent=view==='home'&&!query?tr('Promotions and hand-picked digital products','عروض ومنتجات رقمية مختارة'):tr('Browse and select what you need','تصفح واختار اللي محتاج');
  $('resultCount').textContent=shown.length+' '+tr('products','منتجات');
  $('empty').style.display=shown.length?'none':'block';
- const nodes=shown.map(p=>{const item=document.createElement('article');item.className='card'+(p.is_featured?' jebha-featured':'');item.innerHTML=(p.is_featured?'<div class="jebha-offer-heading">JEBHA OFFERS</div>':'')+'<div class="visual"><span class="badge product-category-badge"></span><span class="emoji" aria-hidden="true"></span></div><div class="bodycard"><span class="category">JEBHA STORE</span><h3></h3><div class="bottomcard"><span class="price-wrap"><span class="old-price" hidden></span><span class="price"></span></span><button type="button" class="add"></button></div></div>';
+ const nodes=shown.map(p=>{const item=document.createElement('article');item.className='card'+(p.is_featured?' jebha-featured':'');item.innerHTML=(p.is_featured?'<div class="jebha-offer-heading">JEBHA OFFERS</div>':'<div class="jebha-standard-heading">JEBHA STORE</div>')+'<div class="visual"><span class="badge product-category-badge"></span><span class="emoji" aria-hidden="true"></span></div><div class="bodycard"><span class="category">JEBHA STORE</span><h3></h3><div class="bottomcard"><span class="price-wrap"><span class="old-price" hidden></span><span class="price"></span></span><button type="button" class="add"></button></div></div>';
  item.querySelector('.badge').textContent=displayCategory(p);
  if(p.image_url){const pic=document.createElement('img');pic.src=p.image_url;pic.alt=displayName(p);pic.loading='lazy';pic.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;';const surface=item.querySelector('.visual');surface.style.position='relative';surface.prepend(pic);item.querySelector('.emoji').style.display='none';}else{item.querySelector('.emoji').textContent=p.emoji||'📦';}item.querySelector('h3').textContent=displayName(p);item.querySelector('.price').textContent=p.price||tr('Ask for price','سول على الثمن');const oldPrice=item.querySelector('.old-price');const rawOld=Number(p.original_price);const rawCurrent=Number(p.price_value);const discounted=p.original_price!=null&&p.price_value!=null&&rawOld>rawCurrent;oldPrice.hidden=!discounted;oldPrice.textContent=discounted?rawOld.toFixed(2)+' DH':'';
  const b=item.querySelector('.add');b.textContent=tr('View & order →','التفاصيل والطلب ←');
@@ -348,9 +416,10 @@ function renderRelatedProducts(current){
   const card=document.createElement('button');card.type='button';
   card.className='pd-related-card'+(item.is_featured?' pd-related-featured':'');
   card.setAttribute('aria-label',tr('View product: ','عرض المنتوج: ')+displayName(item));
-  if(item.is_featured){
-   const tag=document.createElement('span');tag.className='pd-related-featured-mark';tag.textContent='JEBHA OFFERS';card.append(tag);
-  }
+  const tag=document.createElement('span');
+  tag.className=item.is_featured?'pd-related-featured-mark':'pd-related-standard-mark';
+  tag.textContent=item.is_featured?'JEBHA OFFERS':'JEBHA STORE';
+  card.append(tag);
   const visual=document.createElement('span');visual.className='pd-related-visual';
   if(item.image_url){
    const image=document.createElement('img');image.src=item.image_url;image.alt='';image.loading='lazy';image.decoding='async';visual.append(image);
