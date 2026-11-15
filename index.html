@@ -114,9 +114,18 @@
 .pd-whatsapp{background:#174b34;color:#e5ffee;border:1px solid #378c5e!important}.pd-whatsapp:hover{background:#226b49}
 .pd-hint{font-size:11px;color:#aaa1ae;margin:14px 0 0;line-height:1.85}
 .pd-added{font-size:12px;font-weight:800;color:#58d5a1;min-height:1.6em;margin:10px 0 0}
-.pd-description-block{margin-top:22px;background:#17151c;border:1px solid #38303a;border-radius:19px;padding:clamp(17px,2.8vw,26px)}
-.pd-description-block h2{font-size:19px;font-weight:900;margin:0 0 13px;color:#fff}
-.pd-full-description{white-space:pre-wrap;overflow-wrap:anywhere;color:#d6cdd7;line-height:2.05;font-size:14px;margin:0}
+.pd-media-column{min-width:0;display:flex;flex-direction:column;gap:16px}
+.pd-description-block{margin:0;background:linear-gradient(155deg,#1b1720,#151219);border:1px solid #473440;border-radius:19px;padding:clamp(17px,2.5vw,24px);min-width:0}
+.pd-featured .pd-description-block{border-color:#957244;box-shadow:0 0 15px #d9a64312}
+.pd-description-block h2{font-size:19px;font-weight:900;margin:0 0 12px;color:#fff}
+.pd-full-description{white-space:pre-wrap;overflow-wrap:anywhere;color:#d6cdd7;line-height:1.95;font-size:14px;margin:0;max-height:calc(1.95em * 3);overflow:hidden;position:relative}
+.pd-full-description:not(.is-expanded){mask-image:linear-gradient(to bottom,#000 70%,transparent 100%)}
+.pd-full-description.is-expanded{max-height:none;overflow:visible;mask-image:none}
+.pd-desc-toggle{display:inline-flex;align-items:center;justify-content:center;text-align:center;margin-top:16px;padding:11px 15px;background:#30202a;border:1px solid #9a4a61;color:#ffe1e8;font:inherit;font-size:12px;font-weight:900;line-height:1.5;border-radius:10px;cursor:pointer;transition:background .2s,border-color .2s}
+.pd-desc-toggle:hover{background:#492936;border-color:#ff718a}
+.pd-desc-toggle:focus-visible{outline:3px solid #f85b77;outline-offset:3px}
+.pd-featured .pd-desc-toggle{background:#392b1c;border-color:#b88a4e;color:#ffdea1}
+.pd-featured .pd-desc-toggle:hover{background:#4e3922;border-color:#f7c77d}
 .cartqty{display:flex;align-items:center;gap:6px;margin-top:8px}
 .cartqty button{background:#35222d;border:1px solid #653a4e;color:#fff;border-radius:7px;min-width:28px;height:28px;font-size:16px;font-weight:900}
 .cartqty b{min-width:23px;text-align:center;font-weight:800;font-size:13px}
@@ -142,7 +151,14 @@
  <div class="pd-shell">
   <div class="pd-header"><button type="button" class="pd-back" id="pdBack" data-en="← Back to products" data-ar="→ رجع للمنتجات">← Back to products</button><span class="pd-wordmark">JEBHA STORE • PRODUCT DETAILS</span></div>
   <div class="pd-layout" id="pdLayout">
-   <div class="pd-picture" id="pdPicture"><span class="pd-image-badge" id="pdImageBadge"></span><span class="pd-emoji" id="pdEmoji">📦</span></div>
+   <div class="pd-media-column">
+    <div class="pd-picture" id="pdPicture"><span class="pd-image-badge" id="pdImageBadge"></span><span class="pd-emoji" id="pdEmoji">📦</span></div>
+    <section class="pd-description-block" aria-labelledby="pdDescriptionTitle">
+     <h2 id="pdDescriptionTitle" data-en="Product description" data-ar="وصف المنتوج">Product description</h2>
+     <p class="pd-full-description" id="pdDescription"></p>
+     <button type="button" id="pdDescToggle" class="pd-desc-toggle" aria-controls="pdDescription" aria-expanded="false">View Full Product Description</button>
+    </section>
+   </div>
    <div class="pd-panel">
     <div class="pd-offer">JEBHA OFFERS</div>
     <span class="pd-category" id="pdCategory"></span><h1 id="pdTitle"></h1>
@@ -155,7 +171,6 @@
     <p class="pd-hint" data-en="Orders are confirmed on WhatsApp. Please confirm availability and the final amount before paying." data-ar="الطلب كيتأكد عبر واتساب. تأكد من التوفر والثمن النهائي قبل أي أداء.">Orders are confirmed on WhatsApp. Please confirm availability and the final amount before paying.</p>
    </div>
   </div>
-  <section class="pd-description-block"><h2 data-en="Full product description" data-ar="الوصف الكامل ديال المنتوج">Full product description</h2><p class="pd-full-description" id="pdDescription"></p></section>
  </div>
 </section>
 
@@ -250,6 +265,16 @@ function updateCart(){
 
 // Product details route: full-screen view without leaving the storefront or losing cart.
 let detailProductId=null;let detailQty=1;
+function updateDescriptionToggle(){
+ const btn=$('pdDescToggle'),open=btn.getAttribute('aria-expanded')==='true';
+ btn.textContent=open?tr('Show less','عرض أقل'):tr('View Full Product Description','عرض الوصف كامل');
+}
+function setDescriptionExpanded(open){
+ $('pdDescription').classList.toggle('is-expanded',open);
+ $('pdDescToggle').setAttribute('aria-expanded',String(open));
+ updateDescriptionToggle();
+}
+$('pdDescToggle').addEventListener('click',()=>setDescriptionExpanded($('pdDescToggle').getAttribute('aria-expanded')!=='true'));
 function renderDetailQty(){
  const p=PRODUCTS.find(p=>String(p.id)===String(detailProductId));if(!p)return;
  const unit=priceNumber(p);$('pdQty').textContent=detailQty;
@@ -262,7 +287,7 @@ function renderProductDetail(){
  const p=PRODUCTS.find(p=>String(p.id)===String(detailProductId));if(!p)return;
  const pane=$('productDetail');pane.hidden=false;pane.classList.toggle('pd-featured',!!p.is_featured);
  $('pdCategory').textContent=displayCategory(p);$('pdImageBadge').textContent=displayCategory(p);
- $('pdTitle').textContent=displayName(p);$('pdDescription').textContent=displayDesc(p)||tr('Ask us for full details on WhatsApp.','سولنا على التفاصيل عبر واتساب.');
+ $('pdTitle').textContent=displayName(p);$('pdDescription').textContent=displayDesc(p)||tr('Ask us for full details on WhatsApp.','سولنا على التفاصيل عبر واتساب.');updateDescriptionToggle();
  const pic=$('pdPicture');pic.querySelectorAll('img').forEach(el=>el.remove());
  const emoji=$('pdEmoji');emoji.textContent=p.emoji||'📦';emoji.hidden=!!p.image_url;
  if(p.image_url){const img=document.createElement('img');img.alt=displayName(p);img.src=p.image_url;img.decoding='async';pic.insertBefore(img,emoji)}
@@ -277,7 +302,7 @@ function renderProductDetail(){
 }
 function showProductDetails(id,focus=true){
  const p=PRODUCTS.find(p=>String(p.id)===String(id));if(!p)return;
- if(detailProductId!==p.id)detailQty=1;
+ if(detailProductId!==p.id){detailQty=1;setDescriptionExpanded(false)}
  detailProductId=p.id;renderProductDetail();
  if(focus){$('productDetail').scrollTop=0;$('pdBack').focus({preventScroll:true})}
 }
