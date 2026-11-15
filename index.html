@@ -36,6 +36,44 @@
 @media(max-width:900px){.head{gap:8px}.nav{display:none}.brand{min-width:0}.head-actions #headWa{display:none}.menu-panel{width:min(305px,calc(100vw - 28px))}}
 @media(max-width:600px){.head{height:72px}.brand-text{font-size:12px}.brand img{width:52px;height:50px}.menu-trigger{padding:10px;font-size:12px;gap:5px}.head-actions{gap:5px}.cartbtn{padding:8px}.langtoggle{padding:8px!important}.menu-panel{position:fixed;top:77px;left:12px;width:calc(100vw - 24px);max-height:75vh;overflow-y:auto}.promo-inner{padding:25px;align-items:start;flex-direction:column}.tools{align-items:stretch}.filter-select-label{width:100%;justify-content:space-between}.filter-select-label select{flex:1}}
 .bodycard .product-category-badge{position:static;display:inline-flex;align-self:flex-start;width:max-content;max-width:100%;margin:0 0 10px;padding:5px 10px;background:#33131c;border:1px solid #843343;border-radius:7px;color:#ffa7af;font-weight:900;font-size:10px;line-height:1.4;white-space:normal}.visual .badge{top:12px!important;left:12px!important;right:auto!important;bottom:auto!important;z-index:10!important}
+
+/* JEBHA OFFERS — royal gold treatment, only for products marked Featured in Admin */
+@property --jebha-sheen-angle{syntax:"<angle>";inherits:false;initial-value:0deg}
+.card.jebha-featured{
+  --gold:#f7ce69;position:relative;isolation:isolate;
+  border:1px solid #bd8836;
+  background:linear-gradient(160deg,#211c19 0%,#161318 52%,#121116 100%);
+  box-shadow:0 0 0 1px #e8b85e24,0 0 24px #c48b3030,0 14px 35px #0008;
+}
+.card.jebha-featured::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:5;border-radius:inherit;
+  box-shadow:inset 0 0 0 1px #ffda8050,inset 0 0 20px #dba64212;
+}
+.card.jebha-featured:hover{
+  border-color:#ffe09a;box-shadow:0 0 0 1px #f1bf7f55,0 0 38px #f1b74765,0 18px 38px #000b;
+}
+.jebha-offer-heading{
+  position:relative;z-index:2;display:flex;justify-content:center;align-items:center;gap:9px;
+  padding:12px 8px 11px;background:linear-gradient(100deg,#291d12,#493015 50%,#271c14);
+  color:#ffe2a0;border-bottom:1px solid #a97932;font-size:11px;font-weight:900;
+  letter-spacing:2.1px;text-shadow:0 0 9px #eebc7088,0 0 19px #eebc7055;
+}
+.jebha-offer-heading::before{content:"✦";font-size:13px;color:#f8c45e;filter:drop-shadow(0 0 8px #ffca59)}
+.jebha-offer-heading::after{content:"✦";font-size:13px;color:#f8c45e;filter:drop-shadow(0 0 8px #ffca59)}
+.card.jebha-featured .visual{
+  background:radial-gradient(ellipse at center,#9a6a2833,transparent 70%),#17141b;
+  border-bottom-color:#805b2c;
+}
+.card.jebha-featured .visual .badge{background:#392513;border-color:#b88b46;color:#ffda83}
+.card.jebha-featured .bodycard>.category{color:#e6b95f}
+.card.jebha-featured .price{color:#ffe1a1;text-shadow:0 0 12px #ffc04c38}
+.card.jebha-featured .old-price{color:#bcac96}
+.card.jebha-featured .add{background:linear-gradient(115deg,#e12b42,#ae122a);box-shadow:0 5px 17px #d41b422a}
+@media(min-width:601px){.card.jebha-featured .jebha-offer-heading{animation:jebha-gold-glow 3.6s ease-in-out infinite}}
+@keyframes jebha-gold-glow{0%,100%{text-shadow:0 0 8px #f3bd6075}50%{text-shadow:0 0 16px #ffdc98,0 0 27px #ffc75d8a}}
+@media(max-width:450px){.jebha-offer-heading{font-size:9px;letter-spacing:1px;gap:5px;padding:9px 4px}}
+@media(prefers-reduced-motion:reduce){.jebha-offer-heading{animation:none!important}}
+
 </style>
 <meta name="robots" content="index,follow"><meta property="og:title" content="JEBHA STORE | Digital Products"><meta property="og:description" content="Digital subscriptions, games and services in Morocco. Order on WhatsApp."><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="config.js?v=20261115b"></script></head><body>
 <div class="topline">⚡ <strong>JEBHA STORE</strong><span data-ar=" — عالم المنتجات والخدمات الرقمية" data-en=" — Digital Products &amp; Services"> — Digital Products &amp; Services</span></div>
@@ -89,8 +127,8 @@ function render(){
  $('catalogSubtitle').textContent=view==='home'&&!query?tr('Promotions and hand-picked digital products','عروض ومنتجات رقمية مختارة'):tr('Browse and select what you need','تصفح واختار اللي محتاج');
  $('resultCount').textContent=shown.length+' '+tr('products','منتجات');
  $('empty').style.display=shown.length?'none':'block';
- const nodes=shown.map(p=>{const item=document.createElement('article');item.className='card';item.innerHTML='<div class="visual"><span class="badge product-category-badge"></span><span class="emoji" aria-hidden="true"></span></div><div class="bodycard"><span class="category">JEBHA STORE</span><h3></h3><p></p><div class="bottomcard"><span class="price-wrap"><span class="old-price" hidden></span><span class="price"></span></span><button type="button" class="add"></button></div></div>';
- item.querySelector('.badge').textContent=view==='home'?tr('FEATURED','مميز'):displayCategory(p);
+ const nodes=shown.map(p=>{const item=document.createElement('article');item.className='card'+(p.is_featured?' jebha-featured':'');item.innerHTML=(p.is_featured?'<div class="jebha-offer-heading">JEBHA OFFERS</div>':'')+'<div class="visual"><span class="badge product-category-badge"></span><span class="emoji" aria-hidden="true"></span></div><div class="bodycard"><span class="category">JEBHA STORE</span><h3></h3><p></p><div class="bottomcard"><span class="price-wrap"><span class="old-price" hidden></span><span class="price"></span></span><button type="button" class="add"></button></div></div>';
+ item.querySelector('.badge').textContent=displayCategory(p);
  if(p.image_url){const pic=document.createElement('img');pic.src=p.image_url;pic.alt=displayName(p);pic.loading='lazy';pic.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;';const surface=item.querySelector('.visual');surface.style.position='relative';surface.prepend(pic);item.querySelector('.emoji').style.display='none';}else{item.querySelector('.emoji').textContent=p.emoji||'📦';}item.querySelector('h3').textContent=displayName(p);item.querySelector('p').textContent=displayDesc(p);item.querySelector('.price').textContent=p.price||tr('Ask for price','سول على الثمن');const oldPrice=item.querySelector('.old-price');const rawOld=Number(p.original_price);const rawCurrent=Number(p.price_value);const discounted=p.original_price!=null&&p.price_value!=null&&rawOld>rawCurrent;oldPrice.hidden=!discounted;oldPrice.textContent=discounted?rawOld.toFixed(2)+' DH':'';
  const b=item.querySelector('.add');b.textContent=cart.has(p.id)?tr('✓ In cart','✓ فالسلة'):tr('＋ Add to cart','＋ زيد للسلة');b.addEventListener('click',()=>{cart.add(p.id);updateCart();render();showToast(tr('Added to cart: ','تزاد للسلة: ')+displayName(p)+' ✓')});return item});
  $('grid').replaceChildren(...nodes);
