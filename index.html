@@ -138,6 +138,39 @@
 
 /* Product cards: show only name and price. Full description stays in the detail view. */
 .bodycard .bottomcard{margin-top:18px}
+
+/* RELATED PRODUCTS: all other published products in the selected category */
+.pd-related[hidden]{display:none!important}
+.pd-related{margin-top:34px;padding-top:28px;border-top:1px solid #43313e}
+.pd-related-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:20px}
+.pd-related-eyebrow{display:block;font-size:11px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;color:#f15b70;margin-bottom:5px}
+.pd-related h2{font-size:clamp(23px,3vw,31px);line-height:1.45;margin:0;color:#fff;font-weight:900}
+.pd-related-subtitle{color:#b6abb6;font-size:13px;line-height:1.7;margin:5px 0 0}
+.pd-related-count{white-space:nowrap;border:1px solid #614052;background:#201720;color:#eccdd5;font-size:12px;font-weight:800;border-radius:50px;padding:7px 12px}
+.pd-related-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.pd-related-card{position:relative;display:flex;flex-direction:column;align-items:stretch;width:100%;min-width:0;overflow:hidden;border:1px solid #53303c;border-radius:17px;background:linear-gradient(160deg,#211820,#131217);color:#fff;padding:0;text-align:start;font:inherit;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.pd-related-card:hover{transform:translateY(-3px);border-color:#ee4962;box-shadow:0 12px 28px #0008}
+.pd-related-card:focus-visible{outline:3px solid #ff6f89;outline-offset:3px}
+.pd-related-card.pd-related-featured{border-color:#b98a42;background:linear-gradient(160deg,#211b17,#17141b 60%,#121216)}
+.pd-related-card.pd-related-featured:hover{border-color:#f0c46a;box-shadow:0 12px 28px #0008,0 0 18px #d1a6502b}
+.pd-related-featured-mark{display:block;flex:none;text-align:center;padding:8px 12px;background:linear-gradient(90deg,#392716,#51351c,#392716);color:#ffdc94;border-bottom:1px solid #9b7238;font-size:10px;font-weight:900;letter-spacing:1.2px}
+.pd-related-visual{display:flex;align-items:center;justify-content:center;overflow:hidden;background:#16121b;min-height:170px;height:185px;width:100%}
+.pd-related-visual img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+.pd-related-emoji{font-size:68px;line-height:1}
+.pd-related-info{display:flex;flex:1;flex-direction:column;padding:14px 16px 15px;gap:8px;min-width:0}
+.pd-related-category{display:block;color:#fa8e9f;font-size:11px;font-weight:800;overflow-wrap:anywhere}
+.pd-related-featured .pd-related-category{color:#e7be77}
+.pd-related-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;min-height:2.9em;line-height:1.45;color:#fff;font-size:15px;font-weight:900;overflow-wrap:anywhere}
+.pd-related-prices{display:flex;align-items:center;gap:6px 11px;flex-wrap:wrap;margin-top:auto;padding-top:7px}
+.pd-related-price{font-size:17px;font-weight:900;color:#ff697e}
+.pd-related-featured .pd-related-price{color:#ffdf9b}
+.pd-related-old{font-size:12px;color:#9f98a3;text-decoration:line-through}
+.pd-related-view{display:flex;align-items:center;justify-content:center;min-height:38px;margin-top:9px;border:1px solid #803344;border-radius:10px;background:#391922;color:#ffe9ee;font-size:12px;font-weight:900}
+.pd-related-featured .pd-related-view{border-color:#9f763b;background:#352517;color:#ffdf9b}
+@media(max-width:850px){.pd-related-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.pd-related{margin-top:24px}.pd-related-head{align-items:start}.pd-related-count{font-size:10px;padding:6px 8px}.pd-related-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pd-related-visual{height:125px;min-height:125px}.pd-related-info{padding:10px;gap:6px}.pd-related-name{font-size:12px}.pd-related-category{font-size:10px}.pd-related-price{font-size:14px}.pd-related-view{font-size:11px;min-height:34px}.pd-related-featured-mark{font-size:9px;letter-spacing:.6px}}
+@media(max-width:345px){.pd-related-grid{grid-template-columns:1fr}.pd-related-visual{height:165px}}
+@media(prefers-reduced-motion:reduce){.pd-related-card{transition:none}.pd-related-card:hover{transform:none}}
 </style>
 <meta name="robots" content="index,follow"><meta property="og:title" content="JEBHA STORE | Digital Products"><meta property="og:description" content="Digital subscriptions, games and services in Morocco. Order on WhatsApp."><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="config.js?v=20261115b"></script></head><body>
 <div class="topline">⚡ <strong>JEBHA STORE</strong><span data-ar=" — عالم المنتجات والخدمات الرقمية" data-en=" — Digital Products &amp; Services"> — Digital Products &amp; Services</span></div>
@@ -174,6 +207,17 @@
     <p class="pd-hint" data-en="Orders are confirmed on WhatsApp. Please confirm availability and the final amount before paying." data-ar="الطلب كيتأكد عبر واتساب. تأكد من التوفر والثمن النهائي قبل أي أداء.">Orders are confirmed on WhatsApp. Please confirm availability and the final amount before paying.</p>
    </div>
   </div>
+  <section id="pdRelated" class="pd-related" aria-labelledby="pdRelatedTitle" hidden>
+   <div class="pd-related-head">
+    <div>
+     <span class="pd-related-eyebrow" id="pdRelatedEyebrow">EXPLORE MORE</span>
+     <h2 id="pdRelatedTitle">More from this category</h2>
+     <p class="pd-related-subtitle" id="pdRelatedSubtitle">Explore other products in this section.</p>
+    </div>
+    <span class="pd-related-count" id="pdRelatedCount"></span>
+   </div>
+   <div class="pd-related-grid" id="pdRelatedGrid"></div>
+  </section>
  </div>
 </section>
 
@@ -286,6 +330,53 @@ function renderDetailQty(){
  const order=tr('Hello JEBHA STORE, I want to order this product:\n','سلام JEBHA STORE، بغيت نطلب هاد المنتوج:\n')+displayName(p)+'\n'+tr('Quantity: ','الكمية: ')+detailQty+'\n'+tr('Unit price: ','ثمن الوحدة: ')+(unit==null?tr('Please confirm','خاص التأكيد'):money(unit))+'\n'+tr('Estimated total: ','المجموع التقريبي: ')+(unit==null?tr('Please confirm','خاص التأكيد'):money(unit*detailQty));
  $('pdOrderNow').href=wa(order);
 }
+
+// Show all other *published* items in the same category as the selected product.
+// Uses the already-fetched Supabase catalog. No extra API key, query, or admin changes.
+function renderRelatedProducts(current){
+ const section=$('pdRelated'),grid=$('pdRelatedGrid');
+ grid.replaceChildren();
+ const related=PRODUCTS.filter(item=>item.is_active!==false && String(item.id)!==String(current.id) && item.category===current.category);
+ section.hidden=related.length===0;
+ if(!related.length)return;
+ const categoryName=displayCategory(current)||catLabel(current.category);
+ $('pdRelatedEyebrow').textContent=tr('MORE TO EXPLORE','منتجات أخرى ليك');
+ $('pdRelatedTitle').textContent=tr('More from ','المزيد من ')+categoryName;
+ $('pdRelatedSubtitle').textContent=tr('All other available products from this category.','جميع المنتجات الأخرى المتوفرة فنفس القسم.');
+ $('pdRelatedCount').textContent=related.length+' '+tr(related.length===1?'product':'products',related.length===1?'منتوج':'منتجات');
+ related.forEach(item=>{
+  const card=document.createElement('button');card.type='button';
+  card.className='pd-related-card'+(item.is_featured?' pd-related-featured':'');
+  card.setAttribute('aria-label',tr('View product: ','عرض المنتوج: ')+displayName(item));
+  if(item.is_featured){
+   const tag=document.createElement('span');tag.className='pd-related-featured-mark';tag.textContent='JEBHA OFFERS';card.append(tag);
+  }
+  const visual=document.createElement('span');visual.className='pd-related-visual';
+  if(item.image_url){
+   const image=document.createElement('img');image.src=item.image_url;image.alt='';image.loading='lazy';image.decoding='async';visual.append(image);
+  }else{
+   const emoji=document.createElement('span');emoji.className='pd-related-emoji';emoji.textContent=item.emoji||'📦';visual.append(emoji);
+  }
+  const info=document.createElement('span');info.className='pd-related-info';
+  const category=document.createElement('span');category.className='pd-related-category';category.textContent=displayCategory(item);
+  const name=document.createElement('span');name.className='pd-related-name';name.textContent=displayName(item);
+  const prices=document.createElement('span');prices.className='pd-related-prices';
+  const currentPrice=priceNumber(item),oldPrice=Number(item.original_price);
+  if(item.original_price!=null&&currentPrice!=null&&oldPrice>currentPrice){
+   const old=document.createElement('span');old.className='pd-related-old';old.textContent=money(oldPrice);prices.append(old);
+  }
+  const price=document.createElement('span');price.className='pd-related-price';price.textContent=currentPrice==null?tr('Ask for price','سول على الثمن'):money(currentPrice);prices.append(price);
+  const action=document.createElement('span');action.className='pd-related-view';action.textContent=tr('View & order →','التفاصيل والطلب ←');
+  info.append(category,name,prices,action);card.append(visual,info);
+  // Replace the current detail URL: Back still returns to the storefront.
+  card.addEventListener('click',()=>{
+   history.replaceState(history.state,'','#product='+encodeURIComponent(item.id));
+   showProductDetails(item.id);
+  });
+  grid.append(card);
+ });
+}
+
 function renderProductDetail(){
  const p=PRODUCTS.find(p=>String(p.id)===String(detailProductId));if(!p)return;
  const pane=$('productDetail');pane.hidden=false;pane.classList.toggle('pd-featured',!!p.is_featured);
@@ -300,7 +391,7 @@ function renderProductDetail(){
  if(discount){$('pdOld').textContent=money(old);$('pdDiscount').textContent='-'+Math.round((1-price/old)*100)+'%'}
  $('pdBack').textContent=tr('← Back to products','→ رجع للمنتجات');
  $('pdQtyLabel').textContent=tr('Choose quantity','اختار شحال بغيتي من المنتوج');
- $('pdAdded').textContent='';renderDetailQty();
+ $('pdAdded').textContent='';renderDetailQty();renderRelatedProducts(p);
  document.body.classList.add('detail-open');document.body.style.overflow='hidden';
 }
 function showProductDetails(id,focus=true){
