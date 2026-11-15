@@ -172,39 +172,38 @@
 @media(max-width:345px){.pd-related-grid{grid-template-columns:1fr}.pd-related-visual{height:165px}}
 @media(prefers-reduced-motion:reduce){.pd-related-card{transition:none}.pd-related-card:hover{transform:none}}
 
-/* JEBHA STORE — Neon Crimson for ALL normal product cards.
-   Featured cards keep the original gold JEBHA OFFERS design. */
+/* JEBHA STORE — regular product cards: same glow intensity and spread as gold offers,
+   with crimson-red hue only. Featured products remain unchanged in gold. */
 .card:not(.jebha-featured),
 .pd-related-card:not(.pd-related-featured){
   position:relative;
   isolation:isolate;
-  border:1px solid #ff627c;
+  border:1px solid #bd3654;
   background:linear-gradient(155deg,#201219 0%,#141116 57%,#0e0d13 100%);
-  /* Strong outer neon halo: visible on every side, even without hover */
-  box-shadow:0 0 2px 1px #ff6a85e6,0 0 12px 2px #ff174dbb,0 0 29px 5px #ff174d78,0 0 55px 9px #d6083f55,0 16px 34px #000b;
-  animation:jebha-standard-red-pulse 3.6s ease-in-out infinite;
+  /* Exactly the same blur radius, spread and alpha as the featured gold card */
+  box-shadow:0 0 0 1px #e85e7624,0 0 24px #c4305030,0 14px 35px #0008;
+  animation:none;
 }
 .card:not(.jebha-featured)::after,
 .pd-related-card:not(.pd-related-featured)::after{
   content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
   border-radius:inherit;
-  box-shadow:inset 0 0 0 1px #ff9bae8c,inset 0 0 17px #ff21442c;
+  box-shadow:inset 0 0 0 1px #ff809650,inset 0 0 20px #db425d12;
 }
 .card:not(.jebha-featured):hover,
 .pd-related-card:not(.pd-related-featured):hover{
   transform:translateY(-4px);
   border-color:#ff9aac;
-  animation:none;
-  box-shadow:0 0 3px 1px #ff9aac,0 0 17px 4px #ff245de0,0 0 39px 9px #ff174d9c,0 0 72px 12px #df103f66,0 18px 38px #000c;
+  box-shadow:0 0 0 1px #f17f9555,0 0 38px #f1476865,0 18px 38px #000b;
 }
 .jebha-standard-heading,
 .pd-related-standard-mark{
   position:relative;z-index:2;display:flex;align-items:center;justify-content:center;
   flex:none;text-align:center;
   background:linear-gradient(100deg,#300d18,#651326 50%,#300d18);
-  color:#ffe6ec;border-bottom:1px solid #fe486c;
+  color:#ffe6ec;border-bottom:1px solid #a9324b;
   font-weight:900;text-transform:uppercase;letter-spacing:1.6px;
-  text-shadow:0 0 10px #ff3b66bb,0 0 18px #ff174a6b;
+  text-shadow:0 0 9px #ee708988,0 0 19px #ee708955;
 }
 .jebha-standard-heading{font-size:11px;padding:12px 9px 11px}
 .pd-related-standard-mark{font-size:10px;padding:8px 10px;letter-spacing:1.1px}
@@ -219,7 +218,7 @@
 .pd-related-card:not(.pd-related-featured) .pd-related-category{color:#ff718d}
 .card:not(.jebha-featured) .price,
 .pd-related-card:not(.pd-related-featured) .pd-related-price{
-  color:#ff6d88;text-shadow:0 0 12px #ff315b75;
+  color:#ff6d88;text-shadow:0 0 12px #ff315b38;
 }
 .pd-related-card:not(.pd-related-featured) .pd-related-view{
   background:linear-gradient(105deg,#96142e,#e62348 55%,#99152f);
@@ -229,16 +228,9 @@
 .pd-related-card:not(.pd-related-featured):hover .pd-related-view{
   background:linear-gradient(105deg,#be1638,#ff315b 55%,#c2183a);
 }
-@keyframes jebha-standard-red-pulse{
-  0%,100%{box-shadow:0 0 2px 1px #ff6a85e6,0 0 12px 2px #ff174dbb,0 0 29px 5px #ff174d78,0 0 55px 9px #d6083f55,0 16px 34px #000b}
-  50%{box-shadow:0 0 3px 1px #ff91a7ff,0 0 16px 4px #ff235ae6,0 0 37px 8px #ff174d9c,0 0 70px 12px #dc0a4366,0 16px 34px #000b}
-}
 @media(max-width:450px){
  .jebha-standard-heading{font-size:10px;padding:10px 6px;letter-spacing:1.2px}
  .pd-related-standard-mark{font-size:9px;padding:7px 5px;letter-spacing:.65px}
-}
-@media(prefers-reduced-motion:reduce){
- .card:not(.jebha-featured),.pd-related-card:not(.pd-related-featured){animation:none}
 }
 
 </style>
