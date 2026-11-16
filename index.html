@@ -345,6 +345,38 @@ function setProductQty(id,qty){
 function addToCart(id,qty){setProductQty(id,(cart.get(id)||0)+qty)}
 function priceNumber(p){return p.price_value==null?null:Number(p.price_value)}
 function money(value){return Number(value).toFixed(2)+' DH'}
+// One consistent, WhatsApp-friendly receipt for cart and single-product orders.
+// Prices and quantities always come from the current live catalog / shopper selection.
+function buildWhatsAppOrder(entries){
+ const english=lang==='en';
+ const totalQty=entries.reduce((sum,item)=>sum+item.qty,0);
+ let knownTotal=0,hasUnknownPrice=false;
+ const lines=[
+  '*JEBHA STORE*',
+  '━━━━━━━━━━━━━━━━━━',
+  english?'*NEW ORDER REQUEST*':'*طلب جديد*',
+  english?'Hello! I would like to place this order:':'السلام عليكم، بغيت نطلب هاد المنتجات:',
+  '',english?'*ORDER DETAILS*':'*تفاصيل الطلب*'
+ ];
+ entries.forEach(({product:p,qty},i)=>{
+  const unit=priceNumber(p);
+  const valid=unit!=null&&Number.isFinite(unit);
+  if(valid)knownTotal+=unit*qty;else hasUnknownPrice=true;
+  lines.push('',`*${i+1}. ${displayName(p)}*`,
+   (english?'Category: ':'القسم: ')+displayCategory(p),
+   (english?'Quantity: ':'الكمية: ')+qty,
+   (english?'Unit price: ':'ثمن الوحدة: ')+(valid?money(unit):(english?'Price on request':'الثمن حسب الطلب')),
+   (english?'Subtotal: ':'المجموع الفرعي: ')+(valid?money(unit*qty):(english?'To be confirmed':'خاص التأكيد')));
+ });
+ lines.push('','━━━━━━━━━━━━━━━━━━',
+  (english?'*Number of products:* ':'*عدد المنتجات:* ')+entries.length,
+  (english?'*Total quantity:* ':'*مجموع الوحدات:* ')+totalQty,
+  (english?'*Estimated total:* ':'*المجموع التقريبي:* ')+(hasUnknownPrice?(money(knownTotal)+(english?' + unpriced items':' + منتجات خاصها تحديد الثمن')):money(knownTotal)),
+  '',english?'Please confirm availability, final price and delivery details.':'عافاكم أكدو ليا التوفر والثمن النهائي وطريقة التسليم.',
+  english?'Thank you!':'شكراً!',
+  '━━━━━━━━━━━━━━━━━━');
+ return lines.join('\n');
+}
 function updateCart(){
  const selected=PRODUCTS.filter(p=>(cart.get(p.id)||0)>0);
  const count=selected.reduce((n,p)=>n+(cart.get(p.id)||0),0);
@@ -366,8 +398,9 @@ function updateCart(){
   row.querySelector('.remove').textContent=tr('Remove','حيد');row.querySelector('.remove').addEventListener('click',()=>setProductQty(p.id,0));list.append(row)
  });
  $('cartSummary').textContent=count?tr('Total: ','المجموع: ')+(unknown?(money(grand)+' + '+tr('items priced on request','منتجات الثمن ديالها حسب التوفر')):money(grand)):'';
- const items=selected.map((p,i)=>{const q=cart.get(p.id)||1,unit=priceNumber(p);return (i+1)+'. '+displayName(p)+' × '+q+(unit==null?'':(' — '+money(unit*q)))}).join('\n');
- const message=count?tr('Hello JEBHA STORE, I want to order:\n','سلام JEBHA STORE، بغيت نطلب:\n')+items+'\n'+tr('Estimated total: ','المجموع التقريبي: ')+(unknown?tr('Please confirm the final amount','خاص تأكيد الثمن النهائي'):money(grand)):tr('Hello JEBHA STORE, I would like to know more about your products and prices.','سلام JEBHA STORE، بغيت نسول على المنتجات والأثمنة');
+ const message=count
+  ?buildWhatsAppOrder(selected.map(p=>({product:p,qty:cart.get(p.id)||1})))
+  :tr('Hello JEBHA STORE, I would like to know more about your products and prices.','سلام JEBHA STORE، بغيت نسول على المنتجات والأثمنة');
  $('checkout').href=wa(message);
  $('checkout').textContent=count?tr('Order '+count+' items via WhatsApp ↗','إتمام طلب '+count+' وحدات عبر واتساب ↗'):tr('Ask via WhatsApp ↗','سول على المنتجات عبر واتساب ↗');
 }
@@ -389,7 +422,7 @@ function renderDetailQty(){
  const unit=priceNumber(p);$('pdQty').textContent=detailQty;
  $('pdMinus').disabled=detailQty<=1;$('pdPlus').disabled=detailQty>=9999;
  $('pdTotal').textContent=unit==null?tr('Ask for price','سول على الثمن'):money(unit*detailQty);
- const order=tr('Hello JEBHA STORE, I want to order this product:\n','سلام JEBHA STORE، بغيت نطلب هاد المنتوج:\n')+displayName(p)+'\n'+tr('Quantity: ','الكمية: ')+detailQty+'\n'+tr('Unit price: ','ثمن الوحدة: ')+(unit==null?tr('Please confirm','خاص التأكيد'):money(unit))+'\n'+tr('Estimated total: ','المجموع التقريبي: ')+(unit==null?tr('Please confirm','خاص التأكيد'):money(unit*detailQty));
+ const order=buildWhatsAppOrder([{product:p,qty:detailQty}]);
  $('pdOrderNow').href=wa(order);
 }
 
