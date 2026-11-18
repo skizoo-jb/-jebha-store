@@ -263,25 +263,6 @@
 .jebha-discord-modal-card button:hover{filter:brightness(1.12)}
 .jebha-discord-choice-login{background:#5865f2;border:1px solid #7880ff;color:#fff}.jebha-discord-choice-guest{background:#241d24;border:1px solid #6c4853;color:#fff}.jebha-discord-choice-cancel{background:transparent;border:0;color:#bbb}
 .jebha-discord-modal-card .jebha-discord-modal-note{font-size:11px;color:#9c97a5;margin:6px 0 0}
-
-/* JEBHA STORE — IPTV duration selector (prices hidden until chosen) */
-.iptv-selector{margin:20px 0 18px;padding:19px;border:1px solid #e934563d;border-radius:19px;background:linear-gradient(135deg,#21141c,#120f15 65%);box-shadow:inset 0 1px #ffffff10,0 16px 34px #0005}
-.iptv-selector[hidden]{display:none!important}
-.iptv-selector-top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.iptv-selector-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#ee365a,#a20b31);font-size:24px;box-shadow:0 0 18px #eb2a5255}
-.iptv-selector-heading{font-size:17px;font-weight:900;color:#fff}
-.iptv-selector-sub{font-size:12px;color:#b4a6af;margin-top:3px}
-.iptv-duration-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.iptv-duration{position:relative;border:1px solid #5d4050;background:#1c151c;color:#eee;border-radius:13px;padding:17px 10px;cursor:pointer;font:inherit;font-size:15px;font-weight:900;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
-.iptv-duration:hover:not(:disabled){border-color:#f84468;transform:translateY(-1px)}
-.iptv-duration[aria-pressed="true"]{border-color:#ff365d;background:linear-gradient(135deg,#572037,#28151f);box-shadow:0 0 0 1px #f8365966,0 0 18px #ff31522b;color:#fff}
-.iptv-duration[aria-pressed="true"]:after{content:'✓';position:absolute;top:5px;right:9px;color:#ff647f;font-size:13px}
-.iptv-duration:disabled{opacity:.4;cursor:not-allowed}
-.iptv-reveal{margin-top:16px;padding:13px 15px;border:1px solid #ea446260;border-radius:12px;background:#110d12;display:flex;justify-content:space-between;align-items:center;gap:10px}
-.iptv-reveal strong{font-size:24px;color:#ff5e7c}
-.iptv-reveal:not(.ready) strong{font-size:14px;color:#aaa}
-.iptv-selector-hint{margin:10px 0 0;font-size:11px;color:#ad9ba5;line-height:1.6}
-@media(max-width:520px){.iptv-selector{padding:14px}.iptv-duration{padding:14px 8px}}
 </style>
 <meta name="robots" content="index,follow"><meta property="og:title" content="JEBHA STORE | Digital Products"><meta property="og:description" content="Digital subscriptions, games and services in Morocco. Order on WhatsApp."><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="config.js?v=20261115b"></script></head><body>
 <div class="topline">⚡ <strong>JEBHA STORE</strong><span data-ar=" — عالم المنتجات والخدمات الرقمية" data-en=" — Digital Products &amp; Services"> — Digital Products &amp; Services</span></div>
@@ -320,13 +301,6 @@
     <div class="pd-offer">JEBHA OFFERS</div>
     <span class="pd-category" id="pdCategory"></span><h1 id="pdTitle"></h1>
     <div class="pd-prices"><span class="pd-old" id="pdOld" hidden></span><strong class="pd-price" id="pdPrice"></strong><span class="pd-discount" id="pdDiscount" hidden></span></div>
-
-    <section id="iptvSelector" class="iptv-selector" hidden aria-labelledby="iptvSelectorHeading">
-      <div class="iptv-selector-top"><span class="iptv-selector-icon" aria-hidden="true">📺</span><div><div id="iptvSelectorHeading" class="iptv-selector-heading">اختار مدة الاشتراك</div><div id="iptvSelectorSub" class="iptv-selector-sub">الثمن كيبان غير من بعد ما تختار</div></div></div>
-      <div id="iptvDurationGrid" class="iptv-duration-grid" role="group" aria-label="Subscription duration"></div>
-      <div id="iptvReveal" class="iptv-reveal" role="status" aria-live="polite"><span id="iptvRevealLabel">الثمن</span><strong id="iptvRevealPrice">اختار المدة أولاً</strong></div>
-      <p id="iptvDurationHint" class="iptv-selector-hint">كل مدة عندها الثمن ديالها. الطلب كيأكد البائع التوفر قبل الأداء.</p>
-    </section>
     <label class="pd-qty-label" id="pdQtyLabel" data-en="Choose quantity" data-ar="اختار شحال بغيتي من المنتوج">Choose quantity</label>
     <div class="pd-qtybar" role="group" aria-labelledby="pdQtyLabel"><button type="button" id="pdMinus" aria-label="Decrease quantity">−</button><output id="pdQty" aria-live="polite">1</output><button type="button" id="pdPlus" aria-label="Increase quantity">+</button></div>
     <div class="pd-total"><span class="pd-total-label" data-en="Estimated total" data-ar="المجموع التقريبي">Estimated total</span><strong id="pdTotal">—</strong></div>
@@ -378,58 +352,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 $('promoExplore').addEventListener('click',()=>{view='home';active='الكل';filters();render()});
 
 function filters(){const sel=$('categorySelect');sel.replaceChildren();categories.forEach(cat=>{const opt=document.createElement('option');opt.value=cat;opt.textContent=catLabel(cat);sel.append(opt)});sel.value=view==='category'?active:'الكل';renderMenu()}
-// IPTV options are separate trusted product records, grouped into ONE customer-facing card.
-// Naming convention (set in admin.html): IPTV Premium - 1 Month / 3 Months / 6 Months / 12 Months.
-// Never trust a price supplied by a browser: Discord Edge Function retrieves each SKU by its real ID.
-const IPTV_MONTHS=[1,3,6,12];
-let iptvSelectedMonths=null;
-function iptvMonth(p){
- const name=String(p?.name_en||'')+' | '+String(p?.name||'');
- const found=name.match(/IPTV\s*Premium\s*[-–—|•:]\s*(1|3|6|12)\s*(?:months?|mois|أشهر|شهر)/i);
- return found?Number(found[1]):null;
-}
-function iptvVariants(){
- const items=new Map();
- for(const p of PRODUCTS){const m=iptvMonth(p);if(m&&!items.has(m))items.set(m,p)}
- return items;
-}
-function isIptvVariant(p){return iptvMonth(p)!==null}
-function iptvMainId(){
- const map=iptvVariants();for(const m of IPTV_MONTHS)if(map.has(m))return map.get(m).id;
- return null;
-}
-function iptvDisplayTitle(){return 'IPTV Premium'}
-function iptvDurationLabel(m){return lang==='ar'?(m===1?'شهر واحد':m+' أشهر'):(m===1?'1 Month':m+' Months')}
-function updateIptvSelector(p){
- const group=$('iptvSelector'),iptv=isIptvVariant(p);
- group.hidden=!iptv;
- if(!iptv){$('pdAddToCart').disabled=false;$('pdDiscordOrder').disabled=false;$('pdOrderNow').style.pointerEvents='';$('pdOrderNow').removeAttribute('aria-disabled');return}
- $('iptvSelectorHeading').textContent=tr('Choose subscription duration','اختار مدة الاشتراك');
- $('iptvSelectorSub').textContent=tr('Price appears after choosing a duration','الثمن كيبان غير من بعد ما تختار');
- $('iptvRevealLabel').textContent=tr('Subscription price','ثمن الاشتراك');
- $('iptvDurationHint').textContent=tr('Select a duration first. Availability and payment are confirmed with the seller.','اختار المدة أولاً. التوفر والأداء كيتأكدو مع البائع.');
- const map=iptvVariants(),container=$('iptvDurationGrid');container.replaceChildren();
- for(const m of IPTV_MONTHS){
-  const item=map.get(m),b=document.createElement('button');b.type='button';b.className='iptv-duration';
-  b.textContent=iptvDurationLabel(m);b.disabled=!item;b.setAttribute('aria-pressed',String(iptvSelectedMonths===m));
-  if(!item)b.title=tr('Not available yet','مازال ما متوفرش');
-  b.addEventListener('click',()=>{
-   if(!item)return;
-   iptvSelectedMonths=m;detailProductId=item.id;renderProductDetail();
-  });container.append(b);
- }
- const chosen=map.get(iptvSelectedMonths),ready=Boolean(chosen);
- const price=ready?priceNumber(chosen):null;
- $('iptvReveal').classList.toggle('ready',ready);
- $('iptvRevealPrice').textContent=!ready?tr('Choose a duration first','اختار المدة أولاً'):(price==null?tr('Ask for price','سول على الثمن'):money(price));
- $('pdPrice').textContent=!ready?tr('Choose a duration','اختار المدة'):price==null?tr('Ask for price','سول على الثمن'):money(price);
- $('pdAddToCart').disabled=!ready;$('pdDiscordOrder').disabled=!ready;
- $('pdOrderNow').style.pointerEvents=ready?'':'none';$('pdOrderNow').setAttribute('aria-disabled',String(!ready));
-}
 function render(){
  const query=$('search').value.trim().toLowerCase();
  let shown=PRODUCTS.filter(p=>{
-  if(isIptvVariant(p) && String(p.id)!==String(iptvMainId()))return false;
   if(view==='home'&&!query&&!featuredIds.has(p.id))return false;
   if(view==='category'&&!query&&p.category!==active)return false;
   if(view==='category'&&query&&p.category!==active)return false;
@@ -442,7 +367,7 @@ function render(){
  $('empty').style.display=shown.length?'none':'block';
  const nodes=shown.map(p=>{const item=document.createElement('article');item.className='card'+(p.is_featured?' jebha-featured':'');item.innerHTML=(p.is_featured?'<div class="jebha-offer-heading">JEBHA OFFERS</div>':'<div class="jebha-standard-heading">JEBHA STORE</div>')+'<div class="visual"><span class="badge product-category-badge"></span><span class="emoji" aria-hidden="true"></span></div><div class="bodycard"><span class="category">JEBHA STORE</span><h3></h3><div class="bottomcard"><span class="price-wrap"><span class="old-price" hidden></span><span class="price"></span></span><button type="button" class="add"></button></div></div>';
  item.querySelector('.badge').textContent=displayCategory(p);
- if(p.image_url){const pic=document.createElement('img');pic.src=p.image_url;pic.alt=displayName(p);pic.loading='lazy';pic.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;';const surface=item.querySelector('.visual');surface.style.position='relative';surface.prepend(pic);item.querySelector('.emoji').style.display='none';}else{item.querySelector('.emoji').textContent=p.emoji||'📦';}item.querySelector('h3').textContent=isIptvVariant(p)?iptvDisplayTitle():displayName(p);item.querySelector('.price').textContent=isIptvVariant(p)?tr('Choose duration','اختار المدة'):p.price||tr('Ask for price','سول على الثمن');const oldPrice=item.querySelector('.old-price');const rawOld=Number(p.original_price);const rawCurrent=Number(p.price_value);const discounted=p.original_price!=null&&p.price_value!=null&&rawOld>rawCurrent;oldPrice.hidden=!discounted||isIptvVariant(p);oldPrice.textContent=discounted?rawOld.toFixed(2)+' DH':'';
+ if(p.image_url){const pic=document.createElement('img');pic.src=p.image_url;pic.alt=displayName(p);pic.loading='lazy';pic.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;';const surface=item.querySelector('.visual');surface.style.position='relative';surface.prepend(pic);item.querySelector('.emoji').style.display='none';}else{item.querySelector('.emoji').textContent=p.emoji||'📦';}item.querySelector('h3').textContent=displayName(p);item.querySelector('.price').textContent=p.price||tr('Ask for price','سول على الثمن');const oldPrice=item.querySelector('.old-price');const rawOld=Number(p.original_price);const rawCurrent=Number(p.price_value);const discounted=p.original_price!=null&&p.price_value!=null&&rawOld>rawCurrent;oldPrice.hidden=!discounted;oldPrice.textContent=discounted?rawOld.toFixed(2)+' DH':'';
  const b=item.querySelector('.add');b.textContent=tr('View & order →','التفاصيل والطلب ←');
  b.addEventListener('click',e=>{e.stopPropagation();openProductDetails(p.id)});
  item.tabIndex=0;item.setAttribute('role','button');item.setAttribute('aria-label',tr('View details and order: ','شوف التفاصيل وطلب: ')+displayName(p));
@@ -536,7 +461,7 @@ function renderDetailQty(){
  const p=PRODUCTS.find(p=>String(p.id)===String(detailProductId));if(!p)return;
  const unit=priceNumber(p);$('pdQty').textContent=detailQty;
  $('pdMinus').disabled=detailQty<=1;$('pdPlus').disabled=detailQty>=9999;
- $('pdTotal').textContent=isIptvVariant(p)&&!iptvSelectedMonths?tr('Choose a duration first','اختار المدة أولاً'):unit==null?tr('Ask for price','سول على الثمن'):money(unit*detailQty);
+ $('pdTotal').textContent=unit==null?tr('Ask for price','سول على الثمن'):money(unit*detailQty);
  const order=buildWhatsAppOrder([{product:p,qty:detailQty}]);
  $('pdOrderNow').href=wa(order);
 }
@@ -546,7 +471,7 @@ function renderDetailQty(){
 function renderRelatedProducts(current){
  const section=$('pdRelated'),grid=$('pdRelatedGrid');
  grid.replaceChildren();
- const related=PRODUCTS.filter(item=>item.is_active!==false && String(item.id)!==String(current.id) && item.category===current.category && (!isIptvVariant(item)||String(item.id)===String(iptvMainId())) && (!isIptvVariant(current)||!isIptvVariant(item)));
+ const related=PRODUCTS.filter(item=>item.is_active!==false && String(item.id)!==String(current.id) && item.category===current.category);
  section.hidden=related.length===0;
  if(!related.length)return;
  const categoryName=displayCategory(current)||catLabel(current.category);
@@ -592,28 +517,27 @@ function renderProductDetail(){
  const p=PRODUCTS.find(p=>String(p.id)===String(detailProductId));if(!p)return;
  const pane=$('productDetail');pane.hidden=false;pane.classList.toggle('pd-featured',!!p.is_featured);
  $('pdCategory').textContent=displayCategory(p);$('pdImageBadge').textContent=displayCategory(p);
- $('pdDiscordFeedback').textContent='';$('pdTitle').textContent=isIptvVariant(p)?iptvDisplayTitle():displayName(p);$('pdDescription').textContent=displayDesc(p)||tr('Ask us for full details on WhatsApp.','سولنا على التفاصيل عبر واتساب.');updateDescriptionToggle();
+ $('pdDiscordFeedback').textContent='';$('pdTitle').textContent=displayName(p);$('pdDescription').textContent=displayDesc(p)||tr('Ask us for full details on WhatsApp.','سولنا على التفاصيل عبر واتساب.');updateDescriptionToggle();
  const pic=$('pdPicture');pic.querySelectorAll('img').forEach(el=>el.remove());
  const emoji=$('pdEmoji');emoji.textContent=p.emoji||'📦';emoji.hidden=!!p.image_url;
  if(p.image_url){const img=document.createElement('img');img.alt=displayName(p);img.src=p.image_url;img.decoding='async';pic.insertBefore(img,emoji)}
  const price=priceNumber(p);$('pdPrice').textContent=price==null?tr('Ask for price','سول على الثمن'):money(price);
  const old=Number(p.original_price),discount=p.original_price!=null&&price!=null&&old>price;
- $('pdOld').hidden=!discount||(isIptvVariant(p)&&!iptvSelectedMonths);$('pdDiscount').hidden=!discount||(isIptvVariant(p)&&!iptvSelectedMonths);
+ $('pdOld').hidden=!discount;$('pdDiscount').hidden=!discount;
  if(discount){$('pdOld').textContent=money(old);$('pdDiscount').textContent='-'+Math.round((1-price/old)*100)+'%'}
  $('pdBack').textContent=tr('← Back to products','→ رجع للمنتجات');
  $('pdQtyLabel').textContent=tr('Choose quantity','اختار شحال بغيتي من المنتوج');
- $('pdAdded').textContent='';updateIptvSelector(p);renderDetailQty();renderRelatedProducts(p);
+ $('pdAdded').textContent='';renderDetailQty();renderRelatedProducts(p);
  document.body.classList.add('detail-open');document.body.style.overflow='hidden';
 }
 function showProductDetails(id,focus=true){
  const p=PRODUCTS.find(p=>String(p.id)===String(id));if(!p)return;
  if(detailProductId!==p.id){detailQty=1;setDescriptionExpanded(false)}
- iptvSelectedMonths=null;
  detailProductId=p.id;renderProductDetail();
  if(focus){$('productDetail').scrollTop=0;$('pdBack').focus({preventScroll:true})}
 }
 function hideProductDetails(){
- detailProductId=null;iptvSelectedMonths=null;$('productDetail').hidden=true;$('productDetail').classList.remove('pd-featured');
+ detailProductId=null;$('productDetail').hidden=true;$('productDetail').classList.remove('pd-featured');
  document.body.classList.remove('detail-open');document.body.style.overflow='';
 }
 function syncProductRoute(){
@@ -632,7 +556,7 @@ function closeProductDetails(){
 $('pdBack').addEventListener('click',closeProductDetails);
 $('pdMinus').addEventListener('click',()=>{detailQty=Math.max(1,detailQty-1);renderDetailQty()});
 $('pdPlus').addEventListener('click',()=>{detailQty=Math.min(9999,detailQty+1);renderDetailQty()});
-$('pdAddToCart').addEventListener('click',()=>{if(!detailProductId)return;const current=PRODUCTS.find(x=>String(x.id)===String(detailProductId));if(isIptvVariant(current)&&!iptvSelectedMonths)return;addToCart(detailProductId,detailQty);$('pdAdded').textContent=tr('✓ Added to cart — ','✓ تزاد للسلة — ')+detailQty+' '+tr('items','وحدات')});
+$('pdAddToCart').addEventListener('click',()=>{if(!detailProductId)return;addToCart(detailProductId,detailQty);$('pdAdded').textContent=tr('✓ Added to cart — ','✓ تزاد للسلة — ')+detailQty+' '+tr('items','وحدات')});
 window.addEventListener('popstate',syncProductRoute);window.addEventListener('hashchange',syncProductRoute);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('productDetail').hidden){e.preventDefault();closeProductDetails()}});
 function setLang(next){lang=next;document.documentElement.lang=next;document.documentElement.dir=next==='en'?'ltr':'rtl';document.querySelectorAll('[data-ar][data-en]').forEach(el=>{el.textContent=el.dataset[next]});document.querySelectorAll('[data-ar-placeholder][data-en-placeholder]').forEach(el=>{el.placeholder=el.dataset[next+'Placeholder']});$('langToggle').textContent=next==='en'?'العربية':'English';$('langToggle').setAttribute('aria-label',next==='en'?'Switch to Arabic':'Switch to English');try{localStorage.setItem('jebha-store-lang',next)}catch(e){}filters();render();updateCart();if(detailProductId)renderProductDetail()}
@@ -769,7 +693,7 @@ $('discordCartOrder').addEventListener('click',()=>{
  sendDiscordOrder(entries,$('discordCartOrder'),$('discordCartFeedback'));
 });
 $('pdDiscordOrder').addEventListener('click',()=>{
- const p=PRODUCTS.find(p=>String(p.id)===String(detailProductId));if(!p||(isIptvVariant(p)&&!iptvSelectedMonths))return;
+ const p=PRODUCTS.find(p=>String(p.id)===String(detailProductId));if(!p)return;
  sendDiscordOrder([{product:p,qty:detailQty}],$('pdDiscordOrder'),$('pdDiscordFeedback'));
 });
 async function resumeDiscordOrderAfterLogin(){
