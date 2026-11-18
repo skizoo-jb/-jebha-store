@@ -253,6 +253,16 @@
 #discordCartOrder{width:100%;margin-top:10px}
 .pd-actions #pdDiscordOrder{flex:1 1 100%}
 .jebha-discord-feedback{font-size:12px;font-weight:700;line-height:1.6;margin:8px 0;color:#cfcfff}
+\n/* JEBHA STORE Discord checkout choice (displayed only after pressing order) */
+.jebha-discord-modal[hidden]{display:none!important}
+.jebha-discord-modal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(3,5,12,.88);backdrop-filter:blur(9px);padding:18px}
+.jebha-discord-modal-card{width:min(100%,460px);background:linear-gradient(150deg,#1e1b24,#101015);border:1px solid rgba(229,44,71,.55);box-shadow:0 18px 64px #000b,0 0 36px #e5214220;border-radius:22px;padding:28px;display:flex;flex-direction:column;gap:12px;color:#fff;text-align:start}
+.jebha-discord-modal-head{font-size:12px;font-weight:900;letter-spacing:2px;color:#f75c75}.jebha-discord-modal-head span{font-weight:600;letter-spacing:0;color:#aaa}
+.jebha-discord-modal-card h2{font-size:24px;line-height:1.25;margin:4px 0}.jebha-discord-modal-card p{font-size:14px;color:#c9c5d0;line-height:1.6;margin:0 0 8px}
+.jebha-discord-modal-card button{width:100%;padding:14px 16px;border-radius:12px;font:inherit;font-weight:800;cursor:pointer;transition:filter .15s}
+.jebha-discord-modal-card button:hover{filter:brightness(1.12)}
+.jebha-discord-choice-login{background:#5865f2;border:1px solid #7880ff;color:#fff}.jebha-discord-choice-guest{background:#241d24;border:1px solid #6c4853;color:#fff}.jebha-discord-choice-cancel{background:transparent;border:0;color:#bbb}
+.jebha-discord-modal-card .jebha-discord-modal-note{font-size:11px;color:#9c97a5;margin:6px 0 0}
 </style>
 <meta name="robots" content="index,follow"><meta property="og:title" content="JEBHA STORE | Digital Products"><meta property="og:description" content="Digital subscriptions, games and services in Morocco. Order on WhatsApp."><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="config.js?v=20261115b"></script></head><body>
 <div class="topline">⚡ <strong>JEBHA STORE</strong><span data-ar=" — عالم المنتجات والخدمات الرقمية" data-en=" — Digital Products &amp; Services"> — Digital Products &amp; Services</span></div>
@@ -561,42 +571,146 @@ document.querySelectorAll('a[href="#home"]').forEach(el=>el.addEventListener('cl
 // Never put a Discord webhook URL or secret in this public HTML file.
 const DISCORD_ORDER_ENDPOINT = (()=>{
  const url=(window.JEBHA_CONFIG||{}).url||'';
- return /^https:\/\/[^/]+\.supabase\.co$/.test(url)
-   ?url+'/functions/v1/jebha-discord-order':null;
+ return /^https:\/\/[^/]+\.supabase\.co$/.test(url)?url+'/functions/v1/jebha-discord-order':null;
 })();
+// Discord is verified by Supabase Auth; public HTML never contains any secret keys.
+const JEBHA_DISCORD_AUTH = (()=>{
+ const cfg=window.JEBHA_CONFIG||{};
+ if(!window.supabase?.createClient || !cfg.url || !cfg.publishableKey)return null;
+ return window.supabase.createClient(cfg.url,cfg.publishableKey,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'implicit'}
+ });
+})();
+const PENDING_DISCORD_ORDER_KEY='jebha-discord-order-pending-v3';
 let discordOrderBusy=false;
-async function sendDiscordOrder(entries,button,feedback){
+function discordCheckoutChoice(knownName){
+ return new Promise(resolve=>{
+  const overlay=document.getElementById('jebhaDiscordCheckoutModal');
+  const title=document.getElementById('jebhaDiscordModalTitle');
+  const detail=document.getElementById('jebhaDiscordModalDetail');
+  const loginBtn=document.getElementById('jebhaDiscordLoginChoice');
+  const guestBtn=document.getElementById('jebhaDiscordGuestChoice');
+  const closeBtn=document.getElementById('jebhaDiscordCancelChoice');
+  title.textContent=tr('Complete your Discord order','كمل الطلب ديالك عبر Discord');
+  detail.textContent=knownName
+   ?tr('Signed in as '+knownName+'. You can order with your verified Discord account or continue as a guest.','راك داخل بحساب '+knownName+'. تقدر تطلب بالحساب الحقيقي أو تكمل كضيف.')
+   :tr('Choose whether to sign in with your real Discord account or order as a guest.','اختار واش تدخل بحساب Discord الحقيقي ديالك ولا تكمل كضيف.');
+  loginBtn.textContent=knownName?tr('Continue as '+knownName,'كمل بالحساب: '+knownName):tr('Login with Discord','الدخول بحساب Discord');
+  guestBtn.textContent=tr('Continue as guest','كمل بلا تسجيل');
+  closeBtn.textContent=tr('Cancel','إلغاء');
+  overlay.hidden=false;
+  const previousFocus=document.activeElement;
+  loginBtn.focus();
+  const finish=value=>{
+   overlay.hidden=true;
+   loginBtn.removeEventListener('click',login);
+   guestBtn.removeEventListener('click',guest);
+   closeBtn.removeEventListener('click',cancel);
+   overlay.removeEventListener('click',backdrop);
+   document.removeEventListener('keydown',escape);
+   if(previousFocus?.focus)previousFocus.focus();
+   resolve(value);
+  };
+  const login=()=>finish('login');
+  const guest=()=>finish('guest');
+  const cancel=()=>finish(null);
+  const backdrop=e=>{if(e.target===overlay)finish(null)};
+  const escape=e=>{if(e.key==='Escape')finish(null)};
+  loginBtn.addEventListener('click',login);
+  guestBtn.addEventListener('click',guest);
+  closeBtn.addEventListener('click',cancel);
+  overlay.addEventListener('click',backdrop);
+  document.addEventListener('keydown',escape);
+ });
+}
+function getDiscordDisplayName(session){
+ const id=session?.user?.identities?.find(x=>x.provider==='discord');
+ const data=id?.identity_data||{};
+ return String(data.global_name||data.user_name||data.username||session?.user?.user_metadata?.name||'Discord user').slice(0,60);
+}
+async function submitDiscordOrder(entries,button,feedback,{verified=false}={}){
  if(discordOrderBusy)return;
- if(!entries.length){feedback.textContent=tr('Add products to your cart first.','زيد شي منتوج للسلة عاد طلب.');return}
- if(!DISCORD_ORDER_ENDPOINT){feedback.textContent=tr('Discord ordering is not configured. Please use WhatsApp.','طلبات ديسكورد مازال ما تربطاتش. استعمل واتساب.');return}
- // Discord username allows the seller to contact the buyer in the server.
- const account=prompt(tr('Your Discord username (to contact you about the order):','كتب اسم المستخدم ديالك فـDiscord باش نتواصلو معاك:'));
- if(account===null)return;
- const discordUsername=account.trim();
- if(discordUsername.length<2||discordUsername.length>80){feedback.textContent=tr('Please enter a valid Discord username.','دخل اسم مستخدم صحيح ديال Discord.');return}
- discordOrderBusy=true;button.disabled=true;feedback.textContent=tr('Sending order request…','كنصيفطو الطلب…');
+ let jwt=null,discordUsername='';
  try{
+  if(verified){
+   if(!JEBHA_DISCORD_AUTH)throw new Error('Discord login is not available');
+   const {data:{session},error}=await JEBHA_DISCORD_AUTH.auth.getSession();
+   if(error||!session?.access_token)throw new Error('Please sign in with Discord again');
+   if(!session.user?.identities?.some(x=>x.provider==='discord'))throw new Error('This account is not linked to Discord');
+   jwt=session.access_token;
+   discordUsername=getDiscordDisplayName(session);
+  }else{
+   const name=prompt(tr('Your Discord username (guest order, no verified tag):','كتب اسم Discord ديالك (طلب كضيف بلا Tag متحقق):'));
+   if(name===null)return;
+   discordUsername=name.trim();
+   if(discordUsername.length<2||discordUsername.length>80){feedback.textContent=tr('Please enter a valid username.','دخل اسم Discord صحيح.');return}
+  }
+  discordOrderBusy=true;button.disabled=true;feedback.textContent=tr('Sending your order…','كنصيفطو الطلب ديالك…');
   const response=await fetch(DISCORD_ORDER_ENDPOINT,{
-   method:'POST',headers:{'Content-Type':'application/json'},
+   method:'POST',headers:{'Content-Type':'application/json',...(jwt?{Authorization:'Bearer '+jwt}:{})},
    body:JSON.stringify({items:entries.map(({product:p,qty})=>({id:p.id,qty})),discordUsername,language:lang})
   });
   let result={};try{result=await response.json()}catch(e){}
-  if(response.status===429){feedback.textContent=tr('Too many requests. Please wait before ordering again, or use WhatsApp.','طلبات كثيرة. تسنى شوية قبل ما تعاود، أو استعمل واتساب.');return}
-  if(!response.ok||result.ok!==true)throw new Error(result.error||'Could not submit your request');
-  feedback.textContent=tr('✓ Order request sent to JEBHA Discord! Join the server and wait for our reply.','✓ تصيفط الطلب لسيرفر JEBHA! دخل للسيرفر وتسنّى جوابنا.');
+  if(response.status===429){feedback.textContent=tr('Too many attempts. Please try later or use WhatsApp.','طلبات كثيرة، عاود من بعد أو استعمل WhatsApp.');return}
+  if(!response.ok||result.ok!==true)throw new Error(result.error||'Could not submit order');
+  feedback.textContent=tr('Order sent! JEBHA STORE sellers have been notified.','تصيفط الطلب! توصلو البائعين ديال JEBHA STORE بالإشعار.');
  }catch(error){
-  console.error('Discord order request:',error);
-  feedback.textContent=tr('Discord order failed. Please try WhatsApp.','ما تصيفطش طلب ديسكورد. عاود جرّب أو استعمل واتساب.');
+  console.error('JEBHA STORE Discord checkout',error);
+  feedback.textContent=tr('Could not send the order. Try again or use WhatsApp.','ما تصيفطش الطلب. عاود جرّب أو استعمل WhatsApp.');
  }finally{discordOrderBusy=false;button.disabled=false}
 }
+async function sendDiscordOrder(entries,button,feedback){
+ if(discordOrderBusy)return;
+ if(!entries.length){feedback.textContent=tr('Add products to your cart first.','زيد شي منتوج للسلة عاد طلب.');return}
+ if(!DISCORD_ORDER_ENDPOINT){feedback.textContent=tr('Discord ordering is not configured.','طلبات ديسكورد مازال ما تربطاتش.');return}
+ try{
+  const current=JEBHA_DISCORD_AUTH?(await JEBHA_DISCORD_AUTH.auth.getSession()).data.session:null;
+  const choice=await discordCheckoutChoice(current?.user?.identities?.some(x=>x.provider==='discord')?getDiscordDisplayName(current):null);
+  if(!choice)return;
+  if(choice==='guest'){
+   await submitDiscordOrder(entries,button,feedback,{verified:false});
+   return;
+  }
+  if(current?.access_token && current?.user?.identities?.some(x=>x.provider==='discord')){
+   await submitDiscordOrder(entries,button,feedback,{verified:true});
+   return;
+  }
+  if(!JEBHA_DISCORD_AUTH){feedback.textContent=tr('Discord login unavailable. Please try guest checkout.','الدخول بـDiscord ما خدامش دابا، جرّب الطلب كضيف.');return}
+  // Save only IDs and quantities so selected products survive Discord OAuth redirection.
+  sessionStorage.setItem(PENDING_DISCORD_ORDER_KEY,JSON.stringify(entries.map(({product:p,qty})=>({id:String(p.id),qty:Number(qty)}))));
+  feedback.textContent=tr('Redirecting to Discord login…','كنحوّلوك لتسجيل الدخول بـDiscord…');
+  const {error}=await JEBHA_DISCORD_AUTH.auth.signInWithOAuth({provider:'discord',options:{redirectTo:location.origin+location.pathname,scopes:'identify email'}});
+  if(error){sessionStorage.removeItem(PENDING_DISCORD_ORDER_KEY);throw error}
+ }catch(error){
+  console.error('JEBHA STORE Discord sign in',error);
+  feedback.textContent=tr('Discord login could not start. Please try again.','ما قدرناش نبداو الدخول بـDiscord. عاود جرّب.');
+ }
+}
 $('discordCartOrder').addEventListener('click',()=>{
- const entries=PRODUCTS.filter(p=>(cart.get(p.id)||0)>0).map(p=>({product:p,qty:cart.get(p.id)}));
+ const entries=[...cart.entries()].map(([id,qty])=>({product:PRODUCTS.find(p=>String(p.id)===String(id)),qty})).filter(x=>x.product&&x.qty>0);
  sendDiscordOrder(entries,$('discordCartOrder'),$('discordCartFeedback'));
 });
 $('pdDiscordOrder').addEventListener('click',()=>{
  const p=PRODUCTS.find(p=>String(p.id)===String(detailProductId));if(!p)return;
  sendDiscordOrder([{product:p,qty:detailQty}],$('pdDiscordOrder'),$('pdDiscordFeedback'));
 });
+async function resumeDiscordOrderAfterLogin(){
+ const raw=sessionStorage.getItem(PENDING_DISCORD_ORDER_KEY);
+ if(!raw||!JEBHA_DISCORD_AUTH)return;
+ const {data:{session}}=await JEBHA_DISCORD_AUTH.auth.getSession();
+ if(!session?.access_token || !session.user?.identities?.some(x=>x.provider==='discord'))return;
+ sessionStorage.removeItem(PENDING_DISCORD_ORDER_KEY);
+ let saved=[];try{saved=JSON.parse(raw)}catch(e){return}
+ if(!Array.isArray(saved))return;
+ const entries=saved.map(x=>({product:PRODUCTS.find(p=>String(p.id)===String(x.id)),qty:Number(x.qty)}))
+  .filter(x=>x.product&&Number.isSafeInteger(x.qty)&&x.qty>0&&x.qty<=100);
+ if(!entries.length)return;
+ const feedback=$('discordCartFeedback');
+ if(!confirm(tr('You are now signed in with Discord. Send this order request?','دابا دخلتي بحساب Discord. واش نصيفطو الطلب اللي اخترتي؟'))){
+  feedback.textContent=tr('Order was not sent.','الطلب ما تصيفطش.');return;
+ }
+ await submitDiscordOrder(entries,$('discordCartOrder'),feedback,{verified:true});
+}
 
 // LIVE CATALOG: Public read-only Supabase data. Security is enforced in database RLS.
 async function initLiveCatalog(){
@@ -622,8 +736,19 @@ async function initLiveCatalog(){
    PRODUCTS=data.map(p=>({...p,price_value:p.price,price:p.price===null?'':Number(p.price).toFixed(2)+' DH'}));
    featuredIds=new Set(PRODUCTS.filter(p=>p.is_featured).map(p=>p.id));
    categories=['الكل',...new Set([...['اشتراكات','ألعاب','ذكاء اصطناعي','ديسكورد','تواصل اجتماعي'],...PRODUCTS.map(p=>p.category)])];
-   cart.clear();filters();render();updateCart();syncProductRoute();
+   cart.clear();filters();render();updateCart();syncProductRoute();await resumeDiscordOrderAfterLogin();
  }catch(err){showError(err.message||String(err));}
 }
 initLiveCatalog();
-</script></body></html>
+</script><div id="jebhaDiscordCheckoutModal" class="jebha-discord-modal" hidden role="dialog" aria-modal="true" aria-labelledby="jebhaDiscordModalTitle">
+ <div class="jebha-discord-modal-card">
+  <div class="jebha-discord-modal-head">🛒 JEBHA STORE <span>• Discord Checkout</span></div>
+  <h2 id="jebhaDiscordModalTitle">Complete your Discord order</h2>
+  <p id="jebhaDiscordModalDetail">Choose how to continue.</p>
+  <button id="jebhaDiscordLoginChoice" type="button" class="jebha-discord-choice-login">Login with Discord</button>
+  <button id="jebhaDiscordGuestChoice" type="button" class="jebha-discord-choice-guest">Continue as guest</button>
+  <button id="jebhaDiscordCancelChoice" type="button" class="jebha-discord-choice-cancel">Cancel</button>
+  <p class="jebha-discord-modal-note">Verified Discord login enables your account mention in the order channel. Guest orders have no verified account mention.</p>
+ </div>
+</div>
+</body></html>
