@@ -264,7 +264,7 @@
 .jebha-discord-choice-login{background:#5865f2;border:1px solid #7880ff;color:#fff}.jebha-discord-choice-guest{background:#241d24;border:1px solid #6c4853;color:#fff}.jebha-discord-choice-cancel{background:transparent;border:0;color:#bbb}
 .jebha-discord-modal-card .jebha-discord-modal-note{font-size:11px;color:#9c97a5;margin:6px 0 0}
 
-/* IPTV panel-driven subscription selector */
+/* Panel-driven subscription selector for any product (legacy database field names preserved) */
 .jebha-iptv-plans{padding:18px;margin:15px 0;background:linear-gradient(145deg,#25151e,#130e15);border:1px solid #a33b54;border-radius:16px;color:#fff}
 .jebha-iptv-plans[hidden],.jebha-iptv-selected[hidden]{display:none!important}
 .jebha-iptv-plans>b{font-size:17px;display:block}.jebha-iptv-plans>p{color:#c7b6bc;font-size:13px;margin:6px 0 14px}
@@ -312,7 +312,7 @@
     <span class="pd-category" id="pdCategory"></span><h1 id="pdTitle"></h1>
     
 <div id="pdIPTVPlanBox" class="jebha-iptv-plans" hidden>
-  <b id="pdIPTVTitle">Choose IPTV subscription duration</b>
+  <b id="pdIPTVTitle">Choose subscription duration</b>
   <p id="pdIPTVHint">Price will appear after you choose a duration.</p>
   <div id="pdIPTVOptions" class="jebha-iptv-grid"></div>
   <div id="pdIPTVSelectedPrice" class="jebha-iptv-selected" hidden></div>
@@ -384,7 +384,7 @@ function render(){
  $('empty').style.display=shown.length?'none':'block';
  const nodes=shown.map(p=>{const item=document.createElement('article');item.className='card'+(p.is_featured?' jebha-featured':'');item.innerHTML=(p.is_featured?'<div class="jebha-offer-heading">JEBHA OFFERS</div>':'<div class="jebha-standard-heading">JEBHA STORE</div>')+'<div class="visual"><span class="badge product-category-badge"></span><span class="emoji" aria-hidden="true"></span></div><div class="bodycard"><span class="category">JEBHA STORE</span><h3></h3><div class="bottomcard"><span class="price-wrap"><span class="old-price" hidden></span><span class="price"></span></span><button type="button" class="add"></button></div></div>';
  item.querySelector('.badge').textContent=displayCategory(p);
- if(p.image_url){const pic=document.createElement('img');pic.src=p.image_url;pic.alt=displayName(p);pic.loading='lazy';pic.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;';const surface=item.querySelector('.visual');surface.style.position='relative';surface.prepend(pic);item.querySelector('.emoji').style.display='none';}else{item.querySelector('.emoji').textContent=p.emoji||'📦';}item.querySelector('h3').textContent=displayName(p);item.querySelector('.price').textContent=p.is_iptv?tr('Choose duration','اختار المدة'):(p.price||tr('Ask for price','سول على الثمن'));const oldPrice=item.querySelector('.old-price');const rawOld=Number(p.original_price);const rawCurrent=Number(p.price_value);const discounted=p.original_price!=null&&p.price_value!=null&&rawOld>rawCurrent;oldPrice.hidden=!discounted;oldPrice.textContent=discounted?rawOld.toFixed(2)+' DH':'';
+ if(p.image_url){const pic=document.createElement('img');pic.src=p.image_url;pic.alt=displayName(p);pic.loading='lazy';pic.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;';const surface=item.querySelector('.visual');surface.style.position='relative';surface.prepend(pic);item.querySelector('.emoji').style.display='none';}else{item.querySelector('.emoji').textContent=p.emoji||'📦';}item.querySelector('h3').textContent=displayName(p);item.querySelector('.price').textContent=p.is_iptv?(defaultSubscriptionPlan(p)?money(defaultSubscriptionPlan(p).price):tr('Ask for price','سول على الثمن')):(p.price||tr('Ask for price','سول على الثمن'));const oldPrice=item.querySelector('.old-price');const rawOld=Number(p.original_price);const rawCurrent=Number(p.price_value);const discounted=p.original_price!=null&&p.price_value!=null&&rawOld>rawCurrent;oldPrice.hidden=!discounted;oldPrice.textContent=discounted?rawOld.toFixed(2)+' DH':'';
  const b=item.querySelector('.add');b.textContent=tr('View & order →','التفاصيل والطلب ←');
  b.addEventListener('click',e=>{e.stopPropagation();openProductDetails(p.id)});
  item.tabIndex=0;item.setAttribute('role','button');item.setAttribute('aria-label',tr('View details and order: ','شوف التفاصيل وطلب: ')+displayName(p));
@@ -399,7 +399,7 @@ function setProductQty(id,qty){
  if(value===0)cart.delete(id);else cart.set(id,value);
  updateCart();render();
 }
-function addToCart(id,qty){const p=PRODUCTS.find(p=>String(p.id)===String(id));if(p?.is_iptv){showToast(tr('Choose an IPTV duration in product details','اختار مدة IPTV من تفاصيل المنتوج'));return}setProductQty(id,(cart.get(id)||0)+qty)}
+function addToCart(id,qty){const p=PRODUCTS.find(p=>String(p.id)===String(id));if(p?.is_iptv){showToast(tr('Choose a subscription duration in product details','اختار مدة الاشتراك من تفاصيل المنتوج'));return}setProductQty(id,(cart.get(id)||0)+qty)}
 function priceNumber(p){return p.price_value==null?null:Number(p.price_value)}
 function money(value){return Number(value).toFixed(2)+' DH'}
 // One consistent, WhatsApp-friendly receipt for cart and single-product orders.
@@ -465,11 +465,12 @@ function updateCart(){
 // Product details route: full-screen view without leaving the storefront or losing cart.
 let detailProductId=null;let detailQty=1;
 let detailIptvMonths=null;
-function iptvOptions(p){return Array.isArray(p?.iptv_plans)?p.iptv_plans.filter(x=>[1,3,6,12].includes(Number(x.months))&&Number.isFinite(Number(x.price))&&x.price!==null&&Number(x.price)>=0):[]}
+function iptvOptions(p){return Array.isArray(p?.iptv_plans)?p.iptv_plans.filter(x=>Number.isInteger(Number(x.months))&&Number(x.months)>=1&&Number(x.months)<=36&&Number.isFinite(Number(x.price))&&x.price!==null&&Number(x.price)>=0):[]}
+function defaultSubscriptionPlan(p){const plans=iptvOptions(p);return plans.find(x=>Number(x.months)===1)||plans.slice().sort((a,b)=>Number(a.months)-Number(b.months))[0]||null}
 function selectedIptvPlan(p){return p?.is_iptv?iptvOptions(p).find(x=>Number(x.months)===detailIptvMonths):null}
-function iptvDurationLabel(months){return lang==='ar'?({1:'شهر واحد',3:'3 أشهر',6:'6 أشهر',12:'12 شهر'}[months]||months+' أشهر'):months===1?'1 Month':months+' Months'}
+function iptvDurationLabel(months){return lang==='ar'?(months===1?'شهر واحد':months===2?'شهرين':months+' أشهر'):(months===1?'1 Month':months+' Months')}
 function renderIptvPlanPicker(p){const box=$('pdIPTVPlanBox'),grid=$('pdIPTVOptions');box.hidden=!p.is_iptv;grid.replaceChildren();if(!p.is_iptv)return;
- $('pdIPTVTitle').textContent=tr('Choose subscription duration','اختار مدة الاشتراك');$('pdIPTVHint').textContent=tr('The price appears only after selecting a duration.','الثمن كيبان غير من بعد اختيار المدة.');
+ $('pdIPTVTitle').textContent=tr('Choose subscription duration','اختار مدة الاشتراك');$('pdIPTVHint').textContent=tr('The 1-month price is shown by default. Choose another duration to update it.','ثمن شهر واحد باين تلقائياً. اختار مدة أخرى باش يتبدل الثمن.');
  iptvOptions(p).forEach(plan=>{const m=Number(plan.months),b=document.createElement('button');b.type='button';b.className='jebha-iptv-choice';b.textContent=iptvDurationLabel(m);b.setAttribute('aria-pressed',String(detailIptvMonths===m));b.onclick=()=>{detailIptvMonths=m;renderIptvPlanPicker(p);renderDetailQty()};grid.append(b)});
  const found=selectedIptvPlan(p);$('pdIPTVSelectedPrice').hidden=!found;$('pdIPTVSelectedPrice').textContent=found?money(found.price):'';
 }
@@ -528,7 +529,7 @@ function renderRelatedProducts(current){
   if(item.original_price!=null&&currentPrice!=null&&oldPrice>currentPrice){
    const old=document.createElement('span');old.className='pd-related-old';old.textContent=money(oldPrice);prices.append(old);
   }
-  const price=document.createElement('span');price.className='pd-related-price';price.textContent=item.is_iptv?tr('Choose duration','اختار المدة'):(currentPrice==null?tr('Ask for price','سول على الثمن'):money(currentPrice));prices.append(price);
+  const price=document.createElement('span');price.className='pd-related-price';price.textContent=item.is_iptv?(defaultSubscriptionPlan(item)?money(defaultSubscriptionPlan(item).price):tr('Ask for price','سول على الثمن')):(currentPrice==null?tr('Ask for price','سول على الثمن'):money(currentPrice));prices.append(price);
   const action=document.createElement('span');action.className='pd-related-view';action.textContent=tr('View & order →','التفاصيل والطلب ←');
   info.append(category,name,prices,action);card.append(visual,info);
   // Replace the current detail URL: Back still returns to the storefront.
@@ -559,7 +560,7 @@ function renderProductDetail(){
 }
 function showProductDetails(id,focus=true){
  const p=PRODUCTS.find(p=>String(p.id)===String(id));if(!p)return;
- if(detailProductId!==p.id){detailQty=1;detailIptvMonths=null;setDescriptionExpanded(false)}
+ if(detailProductId!==p.id){detailQty=1;detailIptvMonths=p.is_iptv?(defaultSubscriptionPlan(p)?Number(defaultSubscriptionPlan(p).months):null):null;setDescriptionExpanded(false)}
  detailProductId=p.id;renderProductDetail();
  if(focus){$('productDetail').scrollTop=0;$('pdBack').focus({preventScroll:true})}
 }
